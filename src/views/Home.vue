@@ -156,7 +156,9 @@ export default {
     }else if (student_c === '1'){
       this.student_chose_1 = true;
     }
-
+    if (!this.login_state){
+      this.connToWs()
+    }
   },
   methods: {
     connToWs:function (){
@@ -180,10 +182,18 @@ export default {
       websocket.onmessage = function (evt) {
         console.log('Retrieved data from server: ' + evt.data);
         let data = JSON.parse(evt.data);
-        let t = that.receive;
-        t.push({from:that.chatWith.name, msg:data.msg});
-        that.receive = t;
-        console.log(that.receive);
+        if (data.type === 2){
+          that.$notify({
+            title: '收到老师的通知',
+            message: data.from + "说：" + data.msg,
+            duration: 0
+          });
+        }else{
+          let t = that.receive;
+          t.push({from:that.chatWith.name, msg:data.msg});
+          that.receive = t;
+          console.log(that.receive);
+        }
       };
 
       websocket.onerror = function (evt) {
@@ -192,7 +202,7 @@ export default {
     },
     handleClick: function (v) {
       console.log(v);
-      this.connToWs();
+      // this.connToWs();
       this.chatWith = {id:v.id, name:v.name};
       this.drawer = true;
     },

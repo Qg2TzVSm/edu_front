@@ -22,6 +22,12 @@ export default new Vuex.Store({
     },
     setUserProfile(state, profile){
       state.profile = profile
+    },
+    clearState(state){
+      state.edu_user_token = ""
+      state.edu_user_type = -1
+      state.school = {}
+      state.profile = {}
     }
   },
   modules: {}

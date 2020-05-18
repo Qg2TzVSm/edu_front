@@ -24,6 +24,9 @@
         <el-menu-item index="6">
           <router-link to="/register">Sign up</router-link>
         </el-menu-item>
+        <el-menu-item index="7" v-if="!login_state">
+          <a href="#" @click="logout">登出</a>
+        </el-menu-item>
       </el-menu>
     </div>
     <router-view />
@@ -75,7 +78,17 @@
           this.$store.commit('setSchool', {id:e.$attrs.school_id, name:key});
         }
       },
+      logout: function() {
+        window.localStorage.clear();
+        window.sessionStorage.clear();
+        this.$store.commit("clearState")
+        alert("登出成功！");
+
+      },
       reqProfile: function () {
+        if (this.login_state){
+          return;
+        }
         let url = this.is_teacher ? 'teacher/profile' : 'student/profile';
         Req.defaults.headers.common['Authorization'] = "Bearer " + this.$store.state.edu_user_token;
         Req.get(url).then((res) => {

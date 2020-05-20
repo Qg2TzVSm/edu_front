@@ -139,11 +139,18 @@ export default {
     login_state: function() {
       return this.$store.state.edu_user_token === ''
     },
+    profile_ready: function () {
+      return this.$store.state.profile.id !== undefined
+    }
   },
   watch:{
     login_state: function() {
       // this.connToWs();
     },
+    profile_ready: function () {
+      console.log("profile updated")
+      this.connToWs()
+    }
   },
   mounted() {
     let old_data = sessionStorage.getItem('home_table_data_cache');
@@ -156,7 +163,7 @@ export default {
     }else if (student_c === '1'){
       this.student_chose_1 = true;
     }
-    if (!this.login_state){
+    if (!this.login_state && this.profile_ready){
       this.connToWs()
     }
   },
@@ -169,7 +176,7 @@ export default {
         console.log("Connected to WebSocket server.");
         websocket.send(JSON.stringify({
           type:0,
-          user_type:that.$store.state.edu_user_type,
+          user_type:that.$store.state.edu_user_type, // 当前用户类型
           id:0,
           from:that.$store.state.profile.id,
         }));
@@ -188,7 +195,13 @@ export default {
             message: data.from + "说：" + data.msg,
             duration: 0
           });
-        }else{
+        }else if (data.type === 3){
+          that.$notify({
+            title: '收到管理员通知',
+            message: data.msg,
+            duration: 0
+          });
+        } else{
           let t = that.receive;
           t.push({from:that.chatWith.name, msg:data.msg});
           that.receive = t;
@@ -213,9 +226,10 @@ export default {
       if (websocket !== undefined){
         let type = this.$store.state.edu_user_type === 1 ? 0 : 1;
         websocket.send(JSON.stringify({
-          type:type,
-          user_type: type,
+          type:1,
+          user_type: this.$store.state.edu_user_type,
           id:this.chatWith.id,
+          to_user_type: type,
           from:this.$store.state.profile.id,
           msg:this.msg,
         }));
